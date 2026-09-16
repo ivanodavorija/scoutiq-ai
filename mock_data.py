@@ -48,10 +48,40 @@ def filter_by_team(detections, team_name):
     return filtered
 
 
-# Primer korištenja (pokretanje datoteke):
+
+def calculate_team_center(detections):
+    """
+    Računa težište momčadi (prosječnu X i Y poziciju) na temelju proslijeđenih detekcija.
+    Vraća tuple (prosjecni_x, prosjecni_y).
+    """
+    # Zaštita od prazne liste radi izbjegavanja dijeljenja s nulom (ZeroDivisionError)
+    if not detections:
+        return (0.0, 0.0)
+
+    total_x = 0.0
+    total_y = 0.0
+    count = len(detections)
+
+    # Zbrajanje svih x i y koordinata
+    for det in detections:
+        total_x += det["position"][0]
+        total_y += det["position"][1]
+
+    # Izračun prosjeka
+    avg_x = total_x / count
+    avg_y = total_y / count
+
+    return (avg_x, avg_y)
+
+
+# Ispravljeni testni blok na dnu datoteke:
 if __name__ == "__main__":
     all_detections = get_player_positions()
-    
-    # Filtriranje samo "home" tima
+
+    # 1. Filtriranje samo "home" tima
     home_players = filter_by_team(all_detections, "home")
     print("Domaći igrači:", home_players)
+
+    # 2. Izračun težišta za "home" tim
+    home_center = calculate_team_center(home_players)
+    print("Težište domaće ekipe (x, y):", home_center)
