@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from mock_data import get_player_positions, filter_by_team, calculate_team_center
 from video_processor import get_video_info, extract_first_frame
 from video_processor import get_video_info, extract_first_frame, extract_frames_per_second
+from detector import detect_players
 
 app = FastAPI(title="ScoutIQ AI API")
 
@@ -77,4 +78,21 @@ def upload_video(file: UploadFile = File(...)):
         "video_info": info,
         "extracted_frames_count": saved_frames_count,
         "frames_folder": frames_dir
+    }
+
+@app.post("/detect-frame")
+def detect_in_frame(frame_name: str = "frame_0000.jpg"):
+    frame_path = os.path.join(UPLOAD_DIR, "extracted_frames", frame_name)
+    output_path = os.path.join(UPLOAD_DIR, f"detected_{frame_name}")
+    
+    if not os.path.exists(frame_path):
+        return {"error": f"Datoteka {frame_name} ne postoji u uploads/extracted_frames/"}
+        
+    detection_results = detect_players(frame_path, output_path)
+    
+    return {
+        "status": "success",
+        "frame_analyzed": frame_name,
+        "results": detection_results,
+        "annotated_image_saved": output_path
     }
